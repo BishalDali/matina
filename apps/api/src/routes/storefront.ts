@@ -31,9 +31,15 @@ function formatProductCard(product: {
   }>;
 }) {
   const pricing = resolveProductPrice(product.basePriceNpr, null, product.offers);
-  const totalStock = product.variants
-    .filter((v) => v.isActive)
-    .reduce((sum, v) => sum + (v.inventory?.availableQty ?? 0), 0);
+  const activeVariants = product.variants.filter((v) => v.isActive);
+  const totalStock = activeVariants.reduce(
+    (sum, v) => sum + (v.inventory?.availableQty ?? 0),
+    0
+  );
+  const coloursMap = new Map<string, string>();
+  for (const v of activeVariants) {
+    coloursMap.set(v.colourName, v.colourHex);
+  }
 
   return {
     id: product.id,
@@ -46,6 +52,10 @@ function formatProductCard(product: {
     isFeatured: product.isFeatured,
     inStock: totalStock > 0,
     totalStock,
+    colours: Array.from(coloursMap.entries()).map(([name, hex]) => ({
+      name,
+      hex,
+    })),
     ...pricing,
   };
 }

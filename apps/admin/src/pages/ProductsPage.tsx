@@ -17,7 +17,7 @@ interface ProductRow {
   category: { id: string; name: string };
   collections: Array<{ collection: { id: string; name: string } }>;
   images: Array<{ id: string; url: string; imageType: string }>;
-  variants: Array<{ id: string; sku: string; colourName: string; size: string; inventory: { availableQty: number } | null }>;
+  variants: Array<{ id: string; sku: string; colourName: string; colourHex: string; size: string; inventory: { availableQty: number } | null }>;
   offers: Array<{ id: string; offerPriceNpr: number; isActive: boolean }>;
 }
 
@@ -42,6 +42,7 @@ export function ProductsPage() {
 
   // New variant fields (for initial create or adding variant while editing)
   const [variantColour, setVariantColour] = useState('Charcoal Black');
+  const [variantColourHex, setVariantColourHex] = useState('#1C1917');
   const [variantSize, setVariantSize] = useState('L');
   const [initialQty, setInitialQty] = useState(10);
 
@@ -137,9 +138,9 @@ export function ProductsPage() {
           variants: [
             {
               colourName: variantColour,
-              colourHex: '#1C1917',
+              colourHex: variantColourHex,
               size: variantSize,
-              sku: `${skuPrefix}-${variantSize}`.toUpperCase(),
+              sku: `${skuPrefix}-${variantColour.slice(0, 3)}-${variantSize}`.toUpperCase(),
               initialQty: Number(initialQty),
             },
           ],
@@ -168,7 +169,7 @@ export function ProductsPage() {
       method: 'POST',
       body: JSON.stringify({
         colourName: variantColour,
-        colourHex: '#1C1917',
+        colourHex: variantColourHex,
         size: variantSize,
         sku: `${skuPrefix}-${variantColour.slice(0, 3)}-${variantSize}`.toUpperCase(),
         initialQty: Number(initialQty),
@@ -363,27 +364,38 @@ export function ProductsPage() {
                     <p className="text-xs font-semibold uppercase">Existing Variants</p>
                     <div className="space-y-1 text-xs">
                       {editingProduct.variants.map((v) => (
-                        <div key={v.id} className="flex justify-between border bg-stone/30 px-2.5 py-1">
-                          <span>{v.colourName} / {v.size} ({v.sku})</span>
+                        <div key={v.id} className="flex items-center justify-between border bg-stone/30 px-2.5 py-1">
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="inline-block h-3 w-3 rounded-full border border-charcoal/20"
+                              style={{ backgroundColor: v.colourHex || '#1C1917' }}
+                            />
+                            {v.colourName} / {v.size} ({v.sku})
+                          </span>
                           <span>Stock: {v.inventory?.availableQty ?? 0}</span>
                         </div>
                       ))}
                     </div>
                     <p className="pt-2 text-xs font-semibold uppercase">Add New Variant</p>
-                    <div className="grid grid-cols-4 gap-2">
-                      <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour" className="border px-2 py-1.5 text-xs" />
+                    <div className="grid grid-cols-5 gap-2">
+                      <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour Name" className="col-span-2 border px-2 py-1.5 text-xs" />
+                      <input type="color" value={variantColourHex} onChange={(e) => setVariantColourHex(e.target.value)} title="Colour Swatch" className="h-8 w-full cursor-pointer border p-0.5" />
                       <input value={variantSize} onChange={(e) => setVariantSize(e.target.value)} placeholder="Size" className="border px-2 py-1.5 text-xs" />
                       <input type="number" value={initialQty} onChange={(e) => setInitialQty(Number(e.target.value))} placeholder="Stock" className="border px-2 py-1.5 text-xs" />
-                      <button type="button" onClick={handleAddVariant} className="border border-charcoal text-xs font-semibold hover:bg-stone">
-                        + Add Variant
-                      </button>
                     </div>
+                    <button type="button" onClick={handleAddVariant} className="border border-charcoal px-3 py-1.5 text-xs font-semibold hover:bg-stone">
+                      + Add Variant
+                    </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 border-t pt-3">
-                    <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour" className="border px-2 py-1.5 text-xs" />
-                    <input value={variantSize} onChange={(e) => setVariantSize(e.target.value)} placeholder="Size" className="border px-2 py-1.5 text-xs" />
-                    <input type="number" value={initialQty} onChange={(e) => setInitialQty(Number(e.target.value))} placeholder="Stock" className="border px-2 py-1.5 text-xs" />
+                  <div className="space-y-1.5 border-t pt-3">
+                    <p className="text-xs font-semibold uppercase">Initial Variant (Colour, Swatch, Size, Stock)</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour Name" className="col-span-2 border px-2 py-1.5 text-xs" />
+                      <input type="color" value={variantColourHex} onChange={(e) => setVariantColourHex(e.target.value)} title="Colour Swatch" className="h-8 w-full cursor-pointer border p-0.5" />
+                      <input value={variantSize} onChange={(e) => setVariantSize(e.target.value)} placeholder="Size" className="border px-2 py-1.5 text-xs" />
+                      <input type="number" value={initialQty} onChange={(e) => setInitialQty(Number(e.target.value))} placeholder="Stock" className="border px-2 py-1.5 text-xs" />
+                    </div>
                   </div>
                 )}
 

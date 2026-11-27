@@ -14,6 +14,7 @@ export interface ProductCardProps {
   effectivePriceNpr: number;
   discountPercent: number;
   hasActiveOffer: boolean;
+  colours?: Array<{ name: string; hex: string }>;
 }
 
 export function ProductCard({ product }: { product: ProductCardProps }) {
@@ -76,6 +77,18 @@ export function ProductCard({ product }: { product: ProductCardProps }) {
             </span>
           )}
         </div>
+        {product.colours && product.colours.length > 0 && (
+          <div className="flex items-center gap-1.5 pt-1">
+            {product.colours.map((c) => (
+              <span
+                key={c.name}
+                title={c.name}
+                className="h-3 w-3 rounded-full border border-charcoal/25"
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );
