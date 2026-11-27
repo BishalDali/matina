@@ -44,6 +44,8 @@ export function GarmentMockupSvg({
   garmentType,
   colorHex,
   placement = 'front',
+  customMockupUrl,
+  tintCustomMockup = false,
   designImageUrl,
   customText,
   designConfig = {},
@@ -57,6 +59,8 @@ export function GarmentMockupSvg({
   garmentType: string;
   colorHex: string;
   placement?: 'front' | 'back';
+  customMockupUrl?: string | null;
+  tintCustomMockup?: boolean;
   designImageUrl?: string | null;
   customText?: string | null;
   designConfig?: DesignTransform;
@@ -201,8 +205,30 @@ export function GarmentMockupSvg({
         </clipPath>
       </defs>
 
-      {/* GARMENT SILHOUETTE */}
-      {isHoodie || isSweatshirt ? (
+      {/* GARMENT SILHOUETTE OR UPLOADED MOCKUP */}
+      {customMockupUrl ? (
+        <g filter="url(#garmentDrop)">
+          <image
+            href={customMockupUrl}
+            x="16"
+            y="16"
+            width="368"
+            height="448"
+            preserveAspectRatio="xMidYMid meet"
+          />
+          {tintCustomMockup && (
+            <rect
+              x="16"
+              y="16"
+              width="368"
+              height="448"
+              fill={colorHex}
+              style={{ mixBlendMode: 'multiply' }}
+              opacity="0.72"
+            />
+          )}
+        </g>
+      ) : isHoodie || isSweatshirt ? (
         <g filter="url(#garmentDrop)">
           {/* Main organic body & draped sleeves */}
           <path

@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, perm: 'dashboard:read' },
   { to: '/orders', label: 'Orders', icon: ShoppingBag, perm: 'orders:read' },
   { to: '/custom-orders', label: 'Custom Designs', icon: Palette, perm: 'orders:read' },
+  { to: '/custom-templates', label: 'Custom Mockups', icon: Layers, perm: 'products:read' },
   { to: '/products', label: 'Products', icon: Package, perm: 'products:read' },
   { to: '/categories', label: 'Categories', icon: FolderTree, perm: 'categories:read' },
   { to: '/collections', label: 'Collections', icon: Layers, perm: 'collections:read' },

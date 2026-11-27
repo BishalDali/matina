@@ -31,6 +31,8 @@ interface CustomTemplate {
   slug: string;
   garmentType: string;
   description: string | null;
+  frontMockupUrl: string | null;
+  backMockupUrl: string | null;
   basePriceNpr: number;
   availableSizes: string[];
   availableColors: ColorOption[];
@@ -308,6 +310,17 @@ export default function CustomizePage() {
                 garmentType={selectedTemplate?.garmentType || 'tshirt'}
                 colorHex={selectedColor.hex}
                 placement={placement}
+                customMockupUrl={
+                  placement === 'front'
+                    ? selectedTemplate?.frontMockupUrl
+                    : selectedTemplate?.backMockupUrl || selectedTemplate?.frontMockupUrl
+                }
+                tintCustomMockup={Boolean(
+                  (placement === 'front'
+                    ? selectedTemplate?.frontMockupUrl
+                    : selectedTemplate?.backMockupUrl) &&
+                    selectedColor.hex.toLowerCase() !== '#faf7f2'
+                )}
                 designConfig={{
                   artwork: artwork || undefined,
                   textLayers,

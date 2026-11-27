@@ -491,12 +491,14 @@ model AdminUser {
 }
 
 model CustomWearTemplate {
-  id           String   @id @default(cuid())
-  name         String
-  slug         String   @unique
-  garmentType  String   @map("garment_type") // tshirt | sweatshirt | hoodie
-  description  String?
-  basePriceNpr Int      @map("base_price_npr")
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  garmentType     String   @map("garment_type") // tshirt | sweatshirt | hoodie
+  description     String?
+  frontMockupUrl  String?  @map("front_mockup_url")
+  backMockupUrl   String?  @map("back_mockup_url")
+  basePriceNpr    Int      @map("base_price_npr")
   availableSizes String[] @default(["S", "M", "L", "XL", "XXL"]) @map("available_sizes")
   availableColors Json  @default("[]") @map("available_colors")
   isActive     Boolean  @default(true) @map("is_active")
