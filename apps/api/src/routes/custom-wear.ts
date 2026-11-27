@@ -62,6 +62,7 @@ const customRequestSchema = z.object({
       rotation: z.number().optional(),
       textColor: z.string().optional(),
     })
+    .passthrough()
     .optional()
     .default({}),
   customerName: z.string().trim().min(2).max(120),
@@ -133,7 +134,7 @@ customWearRouter.post('/custom-wear/requests', async (req, res, next) => {
         placement: input.placement,
         designImageUrl: input.designImageUrl || null,
         customText: input.customText || null,
-        designConfig: input.designConfig,
+        designConfig: input.designConfig as any,
         customerName: input.customerName,
         phone: input.phone,
         email: input.email || null,

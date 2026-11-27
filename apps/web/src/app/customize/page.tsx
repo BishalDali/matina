@@ -1,10 +1,24 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Upload, RotateCw, CheckCircle2 } from 'lucide-react';
+import {
+  Upload,
+  RotateCw,
+  CheckCircle2,
+  Plus,
+  Trash2,
+  AlignCenter,
+  FlipHorizontal,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { formatNPR } from '@matina/shared';
 import { apiFetch, API_URL } from '@/lib/api';
-import { GarmentMockupSvg } from '@/components/GarmentMockupSvg';
+import {
+  GarmentMockupSvg,
+  ArtworkLayer,
+  TextLayer,
+} from '@/components/GarmentMockupSvg';
 
 interface ColorOption {
   name: string;
@@ -32,17 +46,15 @@ export default function CustomizePage() {
   const [size, setSize] = useState('L');
   const [quantity, setQuantity] = useState(1);
   const [placement, setPlacement] = useState<'front' | 'back'>('front');
+  const [showGuide, setShowGuide] = useState(true);
 
-  const [designImageUrl, setDesignImageUrl] = useState<string>('');
+  // Dynamic layers
+  const [artwork, setArtwork] = useState<ArtworkLayer | null>(null);
+  const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [customText, setCustomText] = useState('');
-  const [textColor, setTextColor] = useState('#FAF7F2');
 
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0);
-  const [scale, setScale] = useState(1);
-  const [rotation, setRotation] = useState(0);
-
+  // Checkout / request fields
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -88,7 +100,16 @@ export default function CustomizePage() {
         throw new Error(body.error || 'Upload failed');
       }
       const data = (await res.json()) as { url: string };
-      setDesignImageUrl(data.url);
+      setArtwork({
+        url: data.url,
+        x: 0,
+        y: -10,
+        scale: 1,
+        rotation: 0,
+        opacity: 1,
+        flipX: false,
+      });
+      setSelectedLayerId('artwork');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -96,9 +117,50 @@ export default function CustomizePage() {
     }
   };
 
+  const addTextLayer = () => {
+    const id = `txt-${Date.now()}`;
+    const next: TextLayer = {
+      id,
+      text: 'MATINA',
+      x: 0,
+      y: artwork ? 70 : 0,
+      scale: 1,
+      rotation: 0,
+      color: selectedColor.hex === '#FAF7F2' || selectedColor.hex === '#E7E0D3' ? '#1C1917' : '#FAF7F2',
+      fontFamily: 'serif',
+      fontSize: 18,
+    };
+    setTextLayers((prev) => [...prev, next]);
+    setSelectedLayerId(id);
+  };
+
+  const handleMoveLayer = (id: string, x: number, y: number) => {
+    if (id === 'artwork' && artwork) {
+      setArtwork({ ...artwork, x, y });
+    } else {
+      setTextLayers((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, x, y } : l))
+      );
+    }
+  };
+
+  const activeTextLayer = textLayers.find((l) => l.id === selectedLayerId) || null;
+  const isArtworkSelected = selectedLayerId === 'artwork' && artwork !== null;
+
+  const updateActiveText = (patch: Partial<TextLayer>) => {
+    if (!activeTextLayer) return;
+    setTextLayers((prev) =>
+      prev.map((l) => (l.id === activeTextLayer.id ? { ...l, ...patch } : l))
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplate) return;
+    if (!artwork && textLayers.length === 0) {
+      setError('Please upload an artwork image or add at least one text layer.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
@@ -111,9 +173,17 @@ export default function CustomizePage() {
           size,
           quantity,
           placement,
-          designImageUrl: designImageUrl || null,
-          customText: customText || null,
-          designConfig: { x: posX, y: posY, scale, rotation, textColor },
+          designImageUrl: artwork?.url || null,
+          customText: textLayers.map((t) => t.text).join(' / ') || null,
+          designConfig: {
+            x: artwork?.x ?? textLayers[0]?.x ?? 0,
+            y: artwork?.y ?? textLayers[0]?.y ?? 0,
+            scale: artwork?.scale ?? textLayers[0]?.scale ?? 1,
+            rotation: artwork?.rotation ?? textLayers[0]?.rotation ?? 0,
+            textColor: textLayers[0]?.color ?? '#FAF7F2',
+            artwork,
+            textLayers,
+          },
           customerName,
           phone,
           email,
@@ -150,8 +220,8 @@ export default function CustomizePage() {
           type="button"
           onClick={() => {
             setSubmittedRequestNumber('');
-            setDesignImageUrl('');
-            setCustomText('');
+            setArtwork(null);
+            setTextLayers([]);
           }}
           className="mt-8 bg-terracotta px-8 py-3 text-xs font-semibold uppercase tracking-widest text-ivory"
         >
@@ -171,15 +241,15 @@ export default function CustomizePage() {
           Customize Your Wear
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-charcoal/70">
-          Select a garment silhouette, customize its colour, upload your own artwork, and preview it live before placing a Cash on Delivery request.
+          Choose your garment, pick any colour, upload artwork, add custom text layers, and drag directly on the garment to position your design.
         </p>
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-12">
-        {/* Live SVG Mockup Studio */}
+        {/* Interactive Drag-and-Drop SVG Studio */}
         <div className="lg:col-span-6">
-          <div className="sticky top-24 border border-cream bg-stone/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="sticky top-24 border border-cream bg-stone/50 p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="flex border border-cream bg-ivory">
                 <button
                   type="button"
@@ -200,29 +270,48 @@ export default function CustomizePage() {
                   Back View
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => { setPosX(0); setPosY(0); setScale(1); setRotation(0); }}
-                className="flex items-center gap-1 text-xs text-charcoal/70 hover:text-terracotta"
-              >
-                <RotateCw className="h-3.5 w-3.5" /> Reset Position
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowGuide((g) => !g)}
+                  className="flex items-center gap-1 text-xs text-charcoal/70 hover:text-terracotta"
+                >
+                  {showGuide ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {showGuide ? 'Hide Guide' : 'Show Guide'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isArtworkSelected && artwork) setArtwork({ ...artwork, x: 0, y: 0 });
+                    if (activeTextLayer) updateActiveText({ x: 0, y: 0 });
+                  }}
+                  className="flex items-center gap-1 text-xs text-charcoal/70 hover:text-terracotta"
+                >
+                  <AlignCenter className="h-3.5 w-3.5" /> Center
+                </button>
+              </div>
             </div>
 
-            <div className="mx-auto aspect-[5/6] max-w-md bg-ivory/70 p-4">
+            <div className="mx-auto aspect-[5/6] max-w-md bg-gradient-to-b from-ivory to-stone/60 p-3">
               <GarmentMockupSvg
                 garmentType={selectedTemplate?.garmentType || 'tshirt'}
                 colorHex={selectedColor.hex}
                 placement={placement}
-                designImageUrl={designImageUrl}
-                customText={customText}
-                designConfig={{ x: posX, y: posY, scale, rotation, textColor }}
-                showPrintGuide
+                designConfig={{
+                  artwork: artwork || undefined,
+                  textLayers,
+                }}
+                showPrintGuide={showGuide}
+                interactive
+                selectedLayerId={selectedLayerId}
+                onSelectLayer={setSelectedLayerId}
+                onMoveLayer={handleMoveLayer}
               />
             </div>
 
-            <div className="mt-4 flex items-center justify-between text-xs text-charcoal/70">
-              <span>{selectedTemplate?.name} &bull; {selectedColor.name}</span>
+            <div className="mt-3 flex items-center justify-between text-xs text-charcoal/70">
+              <span>Tip: Drag artwork or text directly on the garment</span>
               <span className="font-semibold text-charcoal">
                 {selectedTemplate ? formatNPR(selectedTemplate.basePriceNpr * quantity) : ''}
               </span>
@@ -230,9 +319,9 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* Customization Controls & Submission Form */}
+        {/* Studio Controls */}
         <div className="space-y-6 lg:col-span-6">
-          {/* 1. Choose Garment */}
+          {/* 1. Silhouette */}
           <div className="border border-cream bg-ivory p-5">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-charcoal">
               1. Choose Garment Silhouette
@@ -258,7 +347,7 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          {/* 2. Choose Color & Size */}
+          {/* 2. Colour & Size */}
           <div className="border border-cream bg-ivory p-5 space-y-4">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-widest text-charcoal">
@@ -329,73 +418,160 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          {/* 3. Upload Own Design & Adjust */}
+          {/* 3. Dynamic Design Layers */}
           <div className="border border-cream bg-ivory p-5 space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-charcoal">
-              3. Upload Your Design &amp; Adjust
-            </h2>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="inline-flex cursor-pointer items-center gap-2 bg-charcoal px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-ivory hover:bg-terracotta">
-                <Upload className="h-4 w-4" />
-                {uploading ? 'Uploading...' : 'Upload Artwork (PNG/SVG/JPG)'}
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  onChange={handleUploadDesign}
-                  className="hidden"
-                />
-              </label>
-              {designImageUrl && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-charcoal">
+                3. Design Layers (Upload &amp; Text)
+              </h2>
+              <div className="flex gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 bg-charcoal px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-ivory hover:bg-terracotta">
+                  <Upload className="h-3.5 w-3.5" />
+                  {uploading ? 'Uploading...' : artwork ? 'Replace Artwork' : 'Upload Artwork'}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleUploadDesign}
+                    className="hidden"
+                  />
+                </label>
                 <button
                   type="button"
-                  onClick={() => setDesignImageUrl('')}
-                  className="text-xs text-red-700 underline"
+                  onClick={addTextLayer}
+                  className="inline-flex items-center gap-1 border border-charcoal px-3 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-stone"
                 >
-                  Remove Artwork
+                  <Plus className="h-3.5 w-3.5" /> Add Text
                 </button>
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold uppercase">Custom Text (Optional)</label>
-                <input
-                  value={customText}
-                  onChange={(e) => setCustomText(e.target.value)}
-                  placeholder="e.g. MATINA 2026"
-                  className="mt-1 w-full border border-cream px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase">Text Colour</label>
-                <input
-                  type="color"
-                  value={textColor}
-                  onChange={(e) => setTextColor(e.target.value)}
-                  className="mt-1 h-9 w-16 cursor-pointer border border-cream p-0.5"
-                />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-2 text-xs">
-              <label>
-                Horizontal ({posX}px)
-                <input type="range" min={-45} max={45} value={posX} onChange={(e) => setPosX(Number(e.target.value))} className="w-full" />
-              </label>
-              <label>
-                Vertical ({posY}px)
-                <input type="range" min={-55} max={65} value={posY} onChange={(e) => setPosY(Number(e.target.value))} className="w-full" />
-              </label>
-              <label>
-                Scale ({scale.toFixed(1)}x)
-                <input type="range" min={0.4} max={1.6} step={0.1} value={scale} onChange={(e) => setScale(Number(e.target.value))} className="w-full" />
-              </label>
-              <label>
-                Rotation ({rotation}&deg;)
-                <input type="range" min={-45} max={45} value={rotation} onChange={(e) => setRotation(Number(e.target.value))} className="w-full" />
-              </label>
-            </div>
+            {/* Layer Pills */}
+            {(artwork || textLayers.length > 0) && (
+              <div className="flex flex-wrap gap-2 border-t border-cream pt-3">
+                {artwork && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLayerId('artwork')}
+                    className={`flex items-center gap-2 border px-3 py-1 text-xs ${
+                      selectedLayerId === 'artwork' ? 'border-terracotta bg-stone font-semibold' : 'border-cream'
+                    }`}
+                  >
+                    Artwork Image
+                  </button>
+                )}
+                {textLayers.map((t, idx) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedLayerId(t.id)}
+                    className={`flex items-center gap-2 border px-3 py-1 text-xs ${
+                      selectedLayerId === t.id ? 'border-terracotta bg-stone font-semibold' : 'border-cream'
+                    }`}
+                  >
+                    Text #{idx + 1}: {t.text.slice(0, 12)}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Active Artwork Controls */}
+            {isArtworkSelected && artwork && (
+              <div className="space-y-3 border border-cream bg-stone/30 p-4 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold uppercase">Artwork Controls</span>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setArtwork({ ...artwork, flipX: !artwork.flipX })}
+                      className="flex items-center gap-1 hover:text-terracotta"
+                    >
+                      <FlipHorizontal className="h-3.5 w-3.5" /> Flip
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setArtwork({ ...artwork, x: 0, y: 0, scale: 1, rotation: 0 })}
+                      className="flex items-center gap-1 hover:text-terracotta"
+                    >
+                      <RotateCw className="h-3.5 w-3.5" /> Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setArtwork(null); setSelectedLayerId(textLayers[0]?.id || null); }}
+                      className="flex items-center gap-1 text-red-700"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label>
+                    Scale ({artwork.scale.toFixed(1)}x)
+                    <input type="range" min={0.3} max={1.8} step={0.05} value={artwork.scale} onChange={(e) => setArtwork({ ...artwork, scale: Number(e.target.value) })} className="w-full" />
+                  </label>
+                  <label>
+                    Rotation ({artwork.rotation}&deg;)
+                    <input type="range" min={-180} max={180} value={artwork.rotation} onChange={(e) => setArtwork({ ...artwork, rotation: Number(e.target.value) })} className="w-full" />
+                  </label>
+                  <label className="col-span-2">
+                    Opacity ({Math.round(artwork.opacity * 100)}%)
+                    <input type="range" min={0.2} max={1} step={0.05} value={artwork.opacity} onChange={(e) => setArtwork({ ...artwork, opacity: Number(e.target.value) })} className="w-full" />
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Active Text Layer Controls */}
+            {activeTextLayer && (
+              <div className="space-y-3 border border-cream bg-stone/30 p-4 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold uppercase">Text Layer Controls</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTextLayers((prev) => prev.filter((l) => l.id !== activeTextLayer.id));
+                      setSelectedLayerId(artwork ? 'artwork' : null);
+                    }}
+                    className="flex items-center gap-1 text-red-700"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete Text
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    value={activeTextLayer.text}
+                    onChange={(e) => updateActiveText({ text: e.target.value })}
+                    placeholder="Enter text..."
+                    className="col-span-2 border border-cream bg-ivory px-3 py-1.5 text-sm"
+                  />
+                  <select
+                    value={activeTextLayer.fontFamily}
+                    onChange={(e) => updateActiveText({ fontFamily: e.target.value as TextLayer['fontFamily'] })}
+                    className="border border-cream bg-ivory px-2.5 py-1.5 text-xs"
+                  >
+                    <option value="serif">Editorial Serif</option>
+                    <option value="sans">Modern Sans</option>
+                    <option value="mono">Street Mono</option>
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <span>Colour:</span>
+                    <input
+                      type="color"
+                      value={activeTextLayer.color}
+                      onChange={(e) => updateActiveText({ color: e.target.value })}
+                      className="h-7 w-12 cursor-pointer border border-cream p-0.5"
+                    />
+                  </div>
+                  <label>
+                    Size ({activeTextLayer.fontSize}px)
+                    <input type="range" min={10} max={36} value={activeTextLayer.fontSize} onChange={(e) => updateActiveText({ fontSize: Number(e.target.value) })} className="w-full" />
+                  </label>
+                  <label>
+                    Rotation ({activeTextLayer.rotation}&deg;)
+                    <input type="range" min={-180} max={180} value={activeTextLayer.rotation} onChange={(e) => updateActiveText({ rotation: Number(e.target.value) })} className="w-full" />
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 4. Submit Request */}
