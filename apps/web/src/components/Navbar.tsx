@@ -17,6 +17,12 @@ interface NavData {
     backgroundColor?: string;
     textColor?: string;
   } | null;
+  brand: {
+    name?: string;
+    desktopLogoUrl?: string;
+    mobileLogoUrl?: string;
+    svgIconUrl?: string;
+  } | null;
 }
 
 export function Navbar() {
@@ -26,6 +32,7 @@ export function Navbar() {
     categories: [],
     collections: [],
     announcement: null,
+    brand: null,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -33,7 +40,18 @@ export function Navbar() {
 
   useEffect(() => {
     apiFetch<NavData>('/storefront/navigation')
-      .then(setNav)
+      .then((data) => {
+        setNav(data);
+        if (data.brand?.svgIconUrl) {
+          let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = data.brand.svgIconUrl;
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -75,8 +93,35 @@ export function Navbar() {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <Link href="/" className="font-serif text-2xl font-semibold tracking-[0.2em] text-charcoal">
-            MATINA
+          <Link href="/" className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-[0.2em] text-charcoal">
+            {nav.brand?.desktopLogoUrl ? (
+              <img
+                src={nav.brand.desktopLogoUrl}
+                alt={nav.brand.name || 'MATINA'}
+                className="hidden h-9 w-auto object-contain md:block"
+              />
+            ) : (
+              <span className="hidden items-center gap-2 md:flex">
+                {nav.brand?.svgIconUrl && (
+                  <img src={nav.brand.svgIconUrl} alt="" className="h-7 w-7 object-contain" />
+                )}
+                MATINA
+              </span>
+            )}
+            {nav.brand?.mobileLogoUrl || nav.brand?.desktopLogoUrl ? (
+              <img
+                src={nav.brand.mobileLogoUrl || nav.brand.desktopLogoUrl}
+                alt={nav.brand.name || 'MATINA'}
+                className="h-7 w-auto object-contain md:hidden"
+              />
+            ) : (
+              <span className="flex items-center gap-1.5 md:hidden">
+                {nav.brand?.svgIconUrl && (
+                  <img src={nav.brand.svgIconUrl} alt="" className="h-6 w-6 object-contain" />
+                )}
+                MATINA
+              </span>
+            )}
           </Link>
         </div>
 

@@ -10,6 +10,7 @@ import { BannersPage } from './pages/BannersPage';
 import { SectionsPage } from './pages/SectionsPage';
 import { CustomOrdersPage } from './pages/CustomOrdersPage';
 import { CustomTemplatesPage } from './pages/CustomTemplatesPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { CrudResourcePage } from './pages/CrudResourcePage';
 
 function ProtectedRoutes() {
@@ -236,20 +237,7 @@ function ProtectedRoutes() {
             />
           }
         />
-        <Route
-          path="/settings"
-          element={
-            <CrudResourcePage
-              title="Site Settings"
-              endpoint="/admin/settings"
-              allowCreate={false}
-              columns={[
-                { key: 'key', label: 'Setting Key' },
-                { key: 'valueJson', label: 'Value' },
-              ]}
-            />
-          }
-        />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

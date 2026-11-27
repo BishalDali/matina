@@ -127,7 +127,7 @@ export function ImageUploader({
           {uploading ? 'Uploading...' : 'Upload Image'}
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
             onChange={handleFile}
             disabled={uploading}
             className="hidden"

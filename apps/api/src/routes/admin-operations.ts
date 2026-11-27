@@ -17,10 +17,14 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+    if (
+      ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'].includes(
+        file.mimetype
+      )
+    ) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
+      cb(new Error('Only JPEG, PNG, WebP, and SVG images are allowed'));
     }
   },
 });
@@ -33,6 +37,15 @@ adminOperationsRouter.post(
       if (!req.file) {
         return res.status(400).json({ error: 'No image file provided' });
       }
+      const baseUrl = process.env.API_PUBLIC_URL || 'http://localhost:4000';
+
+      if (req.file.mimetype === 'image/svg+xml') {
+        const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.svg`;
+        const outPath = path.join(uploadDir, filename);
+        fs.writeFileSync(outPath, req.file.buffer);
+        return res.status(201).json({ url: `${baseUrl}/uploads/${filename}` });
+      }
+
       const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
       const outPath = path.join(uploadDir, filename);
 
@@ -42,7 +55,6 @@ adminOperationsRouter.post(
         .webp({ quality: 85 })
         .toFile(outPath);
 
-      const baseUrl = process.env.API_PUBLIC_URL || 'http://localhost:4000';
       res.status(201).json({ url: `${baseUrl}/uploads/${filename}` });
     } catch (err) {
       next(err);
