@@ -36,7 +36,6 @@ export function Footer() {
             <li><Link href="/track-order" className="hover:text-terracotta">Track Order</Link></li>
             <li><Link href="/faq" className="hover:text-terracotta">FAQ &amp; Shipping</Link></li>
             <li><Link href="/our-story" className="hover:text-terracotta">Our Story</Link></li>
-            <li><Link href="/journal" className="hover:text-terracotta">Journal</Link></li>
             <li><Link href="/contact" className="hover:text-terracotta">Contact Us</Link></li>
           </ul>
         </div>
