@@ -9,6 +9,7 @@ import { InventoryPage } from './pages/InventoryPage';
 import { BannersPage } from './pages/BannersPage';
 import { SectionsPage } from './pages/SectionsPage';
 import { CustomOrdersPage } from './pages/CustomOrdersPage';
+import { CustomTemplatesPage } from './pages/CustomTemplatesPage';
 import { CrudResourcePage } from './pages/CrudResourcePage';
 
 function ProtectedRoutes() {
@@ -27,34 +28,7 @@ function ProtectedRoutes() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/custom-orders" element={<CustomOrdersPage />} />
-        <Route
-          path="/custom-templates"
-          element={
-            <CrudResourcePage
-              title="Custom Wear Mockups"
-              endpoint="/admin/custom-templates"
-              previewType="tile"
-              columns={[
-                { key: 'frontMockupUrl', label: 'Front Mockup', isImage: true },
-                { key: 'backMockupUrl', label: 'Back Mockup', isImage: true },
-                { key: 'name', label: 'Template Name' },
-                { key: 'garmentType', label: 'Type' },
-                { key: 'basePriceNpr', label: 'Base Price (NPR)' },
-                { key: 'isActive', label: 'Active' },
-              ]}
-              toggleField={{ key: 'isActive', label: 'Status' }}
-              createFields={[
-                { key: 'name', label: 'Template Name', required: true },
-                { key: 'slug', label: 'Slug', required: true },
-                { key: 'garmentType', label: 'Garment Type', type: 'select', options: ['tshirt', 'sweatshirt', 'hoodie'] },
-                { key: 'basePriceNpr', label: 'Base Price (NPR)', type: 'number', required: true },
-                { key: 'frontMockupUrl', label: 'Front Mockup Image (PNG/WebP)', type: 'image', recommendedSize: '900 × 1100 px (white/transparent bg)' },
-                { key: 'backMockupUrl', label: 'Back Mockup Image (PNG/WebP)', type: 'image', recommendedSize: '900 × 1100 px (white/transparent bg)' },
-                { key: 'description', label: 'Description' },
-              ]}
-            />
-          }
-        />
+        <Route path="/custom-templates" element={<CustomTemplatesPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/banners" element={<BannersPage />} />

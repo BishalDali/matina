@@ -23,6 +23,8 @@ import {
 interface ColorOption {
   name: string;
   hex: string;
+  frontMockupUrl?: string;
+  backMockupUrl?: string;
 }
 
 interface CustomTemplate {
@@ -312,13 +314,19 @@ export default function CustomizePage() {
                 placement={placement}
                 customMockupUrl={
                   placement === 'front'
-                    ? selectedTemplate?.frontMockupUrl
-                    : selectedTemplate?.backMockupUrl || selectedTemplate?.frontMockupUrl
+                    ? selectedColor.frontMockupUrl || selectedTemplate?.frontMockupUrl
+                    : selectedColor.backMockupUrl ||
+                      selectedTemplate?.backMockupUrl ||
+                      selectedColor.frontMockupUrl ||
+                      selectedTemplate?.frontMockupUrl
                 }
                 tintCustomMockup={Boolean(
-                  (placement === 'front'
-                    ? selectedTemplate?.frontMockupUrl
-                    : selectedTemplate?.backMockupUrl) &&
+                  !(placement === 'front'
+                    ? selectedColor.frontMockupUrl
+                    : selectedColor.backMockupUrl) &&
+                    (placement === 'front'
+                      ? selectedTemplate?.frontMockupUrl
+                      : selectedTemplate?.backMockupUrl) &&
                     selectedColor.hex.toLowerCase() !== '#faf7f2'
                 )}
                 designConfig={{
