@@ -20,6 +20,7 @@ export function Footer() {
           </h4>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li><Link href="/shop" className="hover:text-terracotta">Shop All</Link></li>
+            <li><Link href="/customize" className="hover:text-terracotta">Customize Your Wear</Link></li>
             <li><Link href="/category/t-shirts" className="hover:text-terracotta">T-Shirts</Link></li>
             <li><Link href="/category/hoodies" className="hover:text-terracotta">Hoodies</Link></li>
             <li><Link href="/category/sweatshirts" className="hover:text-terracotta">Sweatshirts</Link></li>

@@ -12,6 +12,7 @@ import { cartCheckoutRouter } from './routes/cart-checkout';
 import { adminAuthRouter } from './routes/admin-auth';
 import { adminCatalogueRouter } from './routes/admin-catalogue';
 import { adminOperationsRouter } from './routes/admin-operations';
+import { customWearRouter } from './routes/custom-wear';
 import { errorHandler } from './middleware/error';
 
 const app = express();
@@ -47,6 +48,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/v1/storefront', storefrontRouter);
 app.use('/api/v1', cartCheckoutRouter);
+app.use('/api/v1', customWearRouter);
 app.use('/api/v1/admin', adminAuthRouter);
 app.use('/api/v1/admin', adminCatalogueRouter);
 app.use('/api/v1/admin', adminOperationsRouter);

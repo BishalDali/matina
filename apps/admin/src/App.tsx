@@ -8,6 +8,7 @@ import { ProductsPage } from './pages/ProductsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { BannersPage } from './pages/BannersPage';
 import { SectionsPage } from './pages/SectionsPage';
+import { CustomOrdersPage } from './pages/CustomOrdersPage';
 import { CrudResourcePage } from './pages/CrudResourcePage';
 
 function ProtectedRoutes() {
@@ -25,6 +26,7 @@ function ProtectedRoutes() {
       <Route element={<AdminLayout />}>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/custom-orders" element={<CustomOrdersPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/banners" element={<BannersPage />} />

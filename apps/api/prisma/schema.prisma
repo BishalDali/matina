@@ -489,3 +489,50 @@ model AdminUser {
 
   @@map("admin_users")
 }
+
+model CustomWearTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  garmentType  String   @map("garment_type") // tshirt | sweatshirt | hoodie
+  description  String?
+  basePriceNpr Int      @map("base_price_npr")
+  availableSizes String[] @default(["S", "M", "L", "XL", "XXL"]) @map("available_sizes")
+  availableColors Json  @default("[]") @map("available_colors")
+  isActive     Boolean  @default(true) @map("is_active")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  requests CustomOrderRequest[]
+
+  @@map("custom_wear_templates")
+}
+
+model CustomOrderRequest {
+  id              String             @id @default(cuid())
+  requestNumber   String             @unique @map("request_number")
+  templateId      String             @map("template_id")
+  template        CustomWearTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  garmentType     String             @map("garment_type")
+  colourName      String             @map("colour_name")
+  colourHex       String             @map("colour_hex")
+  size            String
+  quantity        Int                @default(1)
+  placement       String             @default("front") // front | back
+  designImageUrl  String?            @map("design_image_url")
+  customText      String?            @map("custom_text")
+  designConfig    Json               @default("{}") @map("design_config") // { x, y, scale, rotation, textColor }
+  customerName    String             @map("customer_name")
+  phone           String
+  email           String?
+  deliveryAddress String             @map("delivery_address")
+  notes           String?
+  estimatedPriceNpr Int              @map("estimated_price_npr")
+  status          String             @default("pending_review") // pending_review | approved | in_production | shipped | delivered | cancelled
+  internalNotes   String?            @map("internal_notes")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("custom_order_requests")
+}

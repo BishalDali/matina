@@ -122,6 +122,9 @@ export function Navbar() {
             </div>
           </div>
 
+          <Link href="/customize" className="font-semibold text-terracotta hover:underline">
+            Customize Your Wear
+          </Link>
           <Link href="/journal" className="hover:text-terracotta transition-colors">
             Journal
           </Link>
@@ -213,6 +216,9 @@ export function Navbar() {
                 </div>
               </div>
               <div className="border-t border-cream pt-3 flex flex-col gap-3">
+                <Link href="/customize" onClick={() => setMobileOpen(false)} className="font-semibold text-terracotta">
+                  Customize Your Wear
+                </Link>
                 <Link href="/journal" onClick={() => setMobileOpen(false)}>Journal</Link>
                 <Link href="/our-story" onClick={() => setMobileOpen(false)}>Our Story</Link>
                 <Link href="/track-order" onClick={() => setMobileOpen(false)}>Track Order</Link>

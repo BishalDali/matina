@@ -389,6 +389,67 @@ async function main() {
     });
   }
 
+  // 12. Custom Wear Templates (T-Shirt, Sweatshirt, Hoodie)
+  const customTemplates = [
+    {
+      name: 'Heavyweight Oversized T-Shirt',
+      slug: 'custom-tshirt',
+      garmentType: 'tshirt',
+      description: '280 GSM 100% combed cotton drop-shoulder tee ready for your custom artwork.',
+      basePriceNpr: 2499,
+      displayOrder: 1,
+      availableSizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      availableColors: [
+        { name: 'Charcoal Black', hex: '#1C1917' },
+        { name: 'Warm Ivory', hex: '#FAF7F2' },
+        { name: 'Terracotta', hex: '#8B3A2B' },
+        { name: 'Deep Maroon', hex: '#6B221B' },
+        { name: 'Stone Beige', hex: '#D6CCBE' },
+        { name: 'Forest Olive', hex: '#3F4E3A' },
+      ],
+    },
+    {
+      name: 'Editorial Crewneck Sweatshirt',
+      slug: 'custom-sweatshirt',
+      garmentType: 'sweatshirt',
+      description: '380 GSM loopback cotton crewneck with ribbed cuffs and relaxed boxy fit.',
+      basePriceNpr: 3999,
+      displayOrder: 2,
+      availableSizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      availableColors: [
+        { name: 'Charcoal Black', hex: '#1C1917' },
+        { name: 'Stone Cream', hex: '#E7E0D3' },
+        { name: 'Terracotta', hex: '#8B3A2B' },
+        { name: 'Slate Navy', hex: '#1E293B' },
+        { name: 'Forest Olive', hex: '#3F4E3A' },
+      ],
+    },
+    {
+      name: 'Structured Fleece Hoodie',
+      slug: 'custom-hoodie',
+      garmentType: 'hoodie',
+      description: '420 GSM French terry hoodie with double-lined hood and kangaroo pocket.',
+      basePriceNpr: 4999,
+      displayOrder: 3,
+      availableSizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      availableColors: [
+        { name: 'Charcoal Black', hex: '#1C1917' },
+        { name: 'Deep Maroon', hex: '#6B221B' },
+        { name: 'Warm Ivory', hex: '#FAF7F2' },
+        { name: 'Stone Beige', hex: '#D6CCBE' },
+        { name: 'Espresso', hex: '#3E2723' },
+      ],
+    },
+  ];
+
+  for (const tpl of customTemplates) {
+    await prisma.customWearTemplate.upsert({
+      where: { slug: tpl.slug },
+      update: { name: tpl.name, basePriceNpr: tpl.basePriceNpr, availableColors: tpl.availableColors },
+      create: tpl,
+    });
+  }
+
   console.log('Seed completed successfully.');
 }
 
