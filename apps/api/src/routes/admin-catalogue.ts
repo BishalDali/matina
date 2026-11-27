@@ -526,3 +526,67 @@ adminCatalogueRouter.get(
     }
   }
 );
+
+// Color Presets CRUD
+adminCatalogueRouter.get(
+  '/color-presets',
+  requirePermission('products:read'),
+  async (_req, res, next) => {
+    try {
+      res.json(
+        await prisma.colorPreset.findMany({ orderBy: { name: 'asc' } })
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+adminCatalogueRouter.post(
+  '/color-presets',
+  requirePermission('products:write'),
+  async (req, res, next) => {
+    try {
+      const { name, hex } = req.body as { name: string; hex: string };
+      const created = await prisma.colorPreset.create({
+        data: { name: name.trim(), hex },
+      });
+      res.status(201).json(created);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+adminCatalogueRouter.patch(
+  '/color-presets/:id',
+  requirePermission('products:write'),
+  async (req, res, next) => {
+    try {
+      const { name, hex } = req.body as { name?: string; hex?: string };
+      const updated = await prisma.colorPreset.update({
+        where: { id: req.params.id },
+        data: {
+          ...(name !== undefined ? { name: name.trim() } : {}),
+          ...(hex !== undefined ? { hex } : {}),
+        },
+      });
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+adminCatalogueRouter.delete(
+  '/color-presets/:id',
+  requirePermission('products:write'),
+  async (req, res, next) => {
+    try {
+      await prisma.colorPreset.delete({ where: { id: req.params.id } });
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
+  }
+);

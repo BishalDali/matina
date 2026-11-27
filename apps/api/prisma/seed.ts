@@ -450,6 +450,25 @@ async function main() {
     });
   }
 
+  // 13. Color Presets
+  const defaultPresets = [
+    { name: 'Charcoal Black', hex: '#1C1917' },
+    { name: 'Warm Ivory', hex: '#FAF7F2' },
+    { name: 'Stone Cream', hex: '#E7E0D3' },
+    { name: 'Warm Sand', hex: '#D6CCBE' },
+    { name: 'Terracotta', hex: '#8B3A2B' },
+    { name: 'Deep Maroon', hex: '#6B221B' },
+    { name: 'Forest Olive', hex: '#3F4E3A' },
+    { name: 'Slate Navy', hex: '#1E293B' },
+  ];
+  for (const preset of defaultPresets) {
+    await prisma.colorPreset.upsert({
+      where: { name: preset.name },
+      update: { hex: preset.hex },
+      create: preset,
+    });
+  }
+
   console.log('Seed completed successfully.');
 }
 

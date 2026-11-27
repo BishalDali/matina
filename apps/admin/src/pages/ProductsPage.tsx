@@ -3,6 +3,7 @@ import { Edit2, Trash2 } from 'lucide-react';
 import { formatNPR, calculateDiscountPercent } from '@matina/shared';
 import { adminFetch } from '../lib/api';
 import { ImageUploader } from '../components/ImageUploader';
+import { ColorPresetPicker } from '../components/ColorPresetPicker';
 
 interface ProductRow {
   id: string;
@@ -377,6 +378,14 @@ export function ProductsPage() {
                       ))}
                     </div>
                     <p className="pt-2 text-xs font-semibold uppercase">Add New Variant</p>
+                    <ColorPresetPicker
+                      selectedName={variantColour}
+                      selectedHex={variantColourHex}
+                      onSelect={(name, hex) => {
+                        setVariantColour(name);
+                        setVariantColourHex(hex);
+                      }}
+                    />
                     <div className="grid grid-cols-5 gap-2">
                       <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour Name" className="col-span-2 border px-2 py-1.5 text-xs" />
                       <input type="color" value={variantColourHex} onChange={(e) => setVariantColourHex(e.target.value)} title="Colour Swatch" className="h-8 w-full cursor-pointer border p-0.5" />
@@ -388,8 +397,16 @@ export function ProductsPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-1.5 border-t pt-3">
+                  <div className="space-y-2 border-t pt-3">
                     <p className="text-xs font-semibold uppercase">Initial Variant (Colour, Swatch, Size, Stock)</p>
+                    <ColorPresetPicker
+                      selectedName={variantColour}
+                      selectedHex={variantColourHex}
+                      onSelect={(name, hex) => {
+                        setVariantColour(name);
+                        setVariantColourHex(hex);
+                      }}
+                    />
                     <div className="grid grid-cols-5 gap-2">
                       <input value={variantColour} onChange={(e) => setVariantColour(e.target.value)} placeholder="Colour Name" className="col-span-2 border px-2 py-1.5 text-xs" />
                       <input type="color" value={variantColourHex} onChange={(e) => setVariantColourHex(e.target.value)} title="Colour Swatch" className="h-8 w-full cursor-pointer border p-0.5" />

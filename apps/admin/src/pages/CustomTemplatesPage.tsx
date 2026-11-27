@@ -3,6 +3,7 @@ import { Edit2, Plus, Trash2 } from 'lucide-react';
 import { formatNPR } from '@matina/shared';
 import { adminFetch } from '../lib/api';
 import { ImageUploader } from '../components/ImageUploader';
+import { ColorPresetPicker } from '../components/ColorPresetPicker';
 
 interface ColorMockup {
   name: string;
@@ -267,6 +268,11 @@ export function CustomTemplatesPage() {
 
                 {colors.map((c, idx) => (
                   <div key={idx} className="space-y-3 border border-stone bg-stone/20 p-4">
+                    <ColorPresetPicker
+                      selectedName={c.name}
+                      selectedHex={c.hex}
+                      onSelect={(name, hex) => updateColor(idx, { name, hex })}
+                    />
                     <div className="flex flex-wrap items-center gap-3">
                       <input
                         required
