@@ -52,6 +52,7 @@ export function GarmentMockupSvg({
   selectedLayerId,
   onSelectLayer,
   onMoveLayer,
+  onResizeLayer,
 }: {
   garmentType: string;
   colorHex: string;
@@ -64,14 +65,17 @@ export function GarmentMockupSvg({
   selectedLayerId?: string | null;
   onSelectLayer?: (id: string) => void;
   onMoveLayer?: (id: string, x: number, y: number) => void;
+  onResizeLayer?: (id: string, scale: number) => void;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [dragging, setDragging] = useState<{
+    mode: 'move' | 'resize';
     id: string;
     startSvgX: number;
     startSvgY: number;
     origX: number;
     origY: number;
+    origScale: number;
   } | null>(null);
 
   const type = garmentType.toLowerCase();
@@ -128,14 +132,16 @@ export function GarmentMockupSvg({
     e: React.PointerEvent,
     id: string,
     origX: number,
-    origY: number
+    origY: number,
+    origScale = 1,
+    mode: 'move' | 'resize' = 'move'
   ) => {
     if (!interactive) return;
     e.stopPropagation();
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     onSelectLayer?.(id);
     const pt = toSvgCoords(e.clientX, e.clientY);
-    setDragging({ id, startSvgX: pt.x, startSvgY: pt.y, origX, origY });
+    setDragging({ mode, id, startSvgX: pt.x, startSvgY: pt.y, origX, origY, origScale });
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -143,9 +149,15 @@ export function GarmentMockupSvg({
     const pt = toSvgCoords(e.clientX, e.clientY);
     const dx = pt.x - dragging.startSvgX;
     const dy = pt.y - dragging.startSvgY;
-    const nextX = Math.max(-75, Math.min(75, Math.round(dragging.origX + dx)));
-    const nextY = Math.max(-85, Math.min(95, Math.round(dragging.origY + dy)));
-    onMoveLayer?.(dragging.id, nextX, nextY);
+    if (dragging.mode === 'resize') {
+      const delta = (dx + dy) / 120;
+      const nextScale = Math.max(0.3, Math.min(2.2, Number((dragging.origScale + delta).toFixed(2))));
+      onResizeLayer?.(dragging.id, nextScale);
+    } else {
+      const nextX = Math.max(-75, Math.min(75, Math.round(dragging.origX + dx)));
+      const nextY = Math.max(-85, Math.min(95, Math.round(dragging.origY + dy)));
+      onMoveLayer?.(dragging.id, nextX, nextY);
+    }
   };
 
   const stopDrag = () => setDragging(null);
@@ -370,16 +382,30 @@ export function GarmentMockupSvg({
               preserveAspectRatio="xMidYMid meet"
             />
             {interactive && selectedLayerId === 'artwork' && (
-              <rect
-                x="-62"
-                y="-62"
-                width="124"
-                height="124"
-                fill="none"
-                stroke="#B08D57"
-                strokeWidth="1.5"
-                strokeDasharray="4 2"
-              />
+              <>
+                <rect
+                  x="-62"
+                  y="-62"
+                  width="124"
+                  height="124"
+                  fill="none"
+                  stroke="#B08D57"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 2"
+                />
+                <circle
+                  cx="62"
+                  cy="62"
+                  r="7"
+                  fill="#FAF7F2"
+                  stroke="#8B3A2B"
+                  strokeWidth="2"
+                  style={{ cursor: 'nwse-resize' }}
+                  onPointerDown={(e) =>
+                    startDrag(e, 'artwork', artwork.x, artwork.y, artwork.scale, 'resize')
+                  }
+                />
+              </>
             )}
           </g>
         )}
@@ -388,7 +414,7 @@ export function GarmentMockupSvg({
           <g
             key={layer.id}
             transform={`translate(${basePrintX + layer.x}, ${basePrintY + layer.y}) rotate(${layer.rotation}) scale(${layer.scale})`}
-            onPointerDown={(e) => startDrag(e, layer.id, layer.x, layer.y)}
+            onPointerDown={(e) => startDrag(e, layer.id, layer.x, layer.y, layer.scale, 'move')}
             style={{ cursor: interactive ? 'grab' : 'default' }}
           >
             <text
@@ -405,16 +431,30 @@ export function GarmentMockupSvg({
               {layer.text}
             </text>
             {interactive && selectedLayerId === layer.id && (
-              <rect
-                x="-68"
-                y={-layer.fontSize}
-                width="136"
-                height={layer.fontSize * 2}
-                fill="none"
-                stroke="#B08D57"
-                strokeWidth="1.2"
-                strokeDasharray="3 2"
-              />
+              <>
+                <rect
+                  x="-68"
+                  y={-layer.fontSize}
+                  width="136"
+                  height={layer.fontSize * 2}
+                  fill="none"
+                  stroke="#B08D57"
+                  strokeWidth="1.2"
+                  strokeDasharray="3 2"
+                />
+                <circle
+                  cx="68"
+                  cy={layer.fontSize}
+                  r="6"
+                  fill="#FAF7F2"
+                  stroke="#8B3A2B"
+                  strokeWidth="2"
+                  style={{ cursor: 'nwse-resize' }}
+                  onPointerDown={(e) =>
+                    startDrag(e, layer.id, layer.x, layer.y, layer.scale, 'resize')
+                  }
+                />
+              </>
             )}
           </g>
         ))}

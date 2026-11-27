@@ -31,7 +31,7 @@ const designUpload = multer({
       cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
     },
   }),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (
       ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'].includes(

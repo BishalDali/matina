@@ -144,6 +144,16 @@ export default function CustomizePage() {
     }
   };
 
+  const handleResizeLayer = (id: string, nextScale: number) => {
+    if (id === 'artwork' && artwork) {
+      setArtwork({ ...artwork, scale: nextScale });
+    } else {
+      setTextLayers((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, scale: nextScale } : l))
+      );
+    }
+  };
+
   const activeTextLayer = textLayers.find((l) => l.id === selectedLayerId) || null;
   const isArtworkSelected = selectedLayerId === 'artwork' && artwork !== null;
 
@@ -307,11 +317,12 @@ export default function CustomizePage() {
                 selectedLayerId={selectedLayerId}
                 onSelectLayer={setSelectedLayerId}
                 onMoveLayer={handleMoveLayer}
+                onResizeLayer={handleResizeLayer}
               />
             </div>
 
             <div className="mt-3 flex items-center justify-between text-xs text-charcoal/70">
-              <span>Tip: Drag artwork or text directly on the garment</span>
+              <span>Tip: Drag artwork to move, or drag the corner handle to resize</span>
               <span className="font-semibold text-charcoal">
                 {selectedTemplate ? formatNPR(selectedTemplate.basePriceNpr * quantity) : ''}
               </span>
@@ -427,7 +438,7 @@ export default function CustomizePage() {
               <div className="flex gap-2">
                 <label className="inline-flex cursor-pointer items-center gap-1.5 bg-charcoal px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-ivory hover:bg-terracotta">
                   <Upload className="h-3.5 w-3.5" />
-                  {uploading ? 'Uploading...' : artwork ? 'Replace Artwork' : 'Upload Artwork'}
+                  {uploading ? 'Uploading...' : artwork ? 'Replace Artwork (Max 50MB)' : 'Upload Artwork (Max 50MB)'}
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/svg+xml"
