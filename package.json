@@ -1,0 +1,31 @@
+{
+  "name": "matina-clothing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Matina Clothing — Nepali Cultural Streetwear E-Commerce Platform",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:api": "pnpm --filter @matina/api dev",
+    "dev:web": "pnpm --filter @matina/web dev",
+    "dev:admin": "pnpm --filter @matina/admin dev",
+    "build": "pnpm --filter @matina/shared build && pnpm --filter @matina/api build && pnpm --filter @matina/web build && pnpm --filter @matina/admin build",
+    "db:generate": "pnpm --filter @matina/api db:generate",
+    "db:migrate": "pnpm --filter @matina/api db:migrate",
+    "db:push": "pnpm --filter @matina/api db:push",
+    "db:seed": "pnpm --filter @matina/api db:seed",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ]
+  }
+}
